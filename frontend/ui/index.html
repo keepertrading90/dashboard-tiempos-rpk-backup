@@ -14,7 +14,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Charts (Chart.js) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/static/ui/styles.css">
 </head>
 
 <body>
@@ -22,7 +22,7 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <img src="../assets/rpk_logo.png" alt="RPK Group Logo"
+                <img src="/static/assets/rpk_logo.png" alt="RPK Group Logo"
                     onerror="this.src='https://rpk.es/images/logo-rpk-group.svg'">
             </div>
 
@@ -189,6 +189,35 @@
                     <canvas id="comparisonChart"></canvas>
                 </div>
             </section>
+
+            <!-- Ranking View -->
+            <section id="tab-ranking" class="tab-content" style="display: none;">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="list-ordered"></i>
+                            <span>Ranking de Saturación por Centro</span>
+                        </div>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Centro</th>
+                                    <th>Carga Total (h)</th>
+                                    <th>Saturación</th>
+                                    <th>Media Diaria</th>
+                                    <th>Total Mes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-ranking-body">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <!-- Drill-down Modal -->
@@ -224,7 +253,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js"></script>
+    <script src="/static/ui/app.js"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();

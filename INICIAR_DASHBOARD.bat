@@ -1,40 +1,52 @@
 @echo off
+title RPK Dashboard Debug
 chcp 65001 >nul
-echo.
+
 echo ============================================================
-echo        RPK GROUP | DASHBOARD ANALISIS DE TIEMPOS
+echo   ANALIZANDO ENTORNO RPK...
 echo ============================================================
-echo.
-echo Iniciando servidor en http://localhost:8000...
-echo.
 
-set PYTHON_PATH="%~dp0..\..\_SISTEMA\runtime_python\python.exe"
+:: Definir rutas absolutas para evitar errores de navegación
+set "ROOT_DIR=%~dp0"
+set "PYTHON_EXE=Y:\Supply Chain\PLAN PRODUCCION\PANEL\_SISTEMA\runtime_python\python.exe"
 
-:: 1. Liberar puerto 8000 si esta ocupado
-echo [1/3] Limpiando procesos previos...
-for /f "tokens=5" %%a in ('netstat -aon ^| find ":8000" ^| find "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
+echo [+] Ruta Raiz: %ROOT_DIR%
+echo [+] Buscando Python en: %PYTHON_EXE%
 
-:: 2. Actualizar datos desde el Excel (Opcional, si el script existe)
-if exist "%~dp0backend\analisis_mensual_tiempos.py" (
-    echo [2/3] Procesando datos de Excel...
-    %PYTHON_PATH% "%~dp0backend\analisis_mensual_tiempos.py"
-) else (
-    echo [2/3] Saltando procesamiento de datos (script no encontrado).
+:: 1. Verificar si Python existe
+if not exist "%PYTHON_EXE%" (
+    echo [ERROR] No se encuentra el ejecutable de Python en la ruta de red.
+    pause
+    exit /b
 )
 
-:: 3. Iniciar el servidor
-echo [3/3] Iniciando backend de FastAPI...
-START /MIN "RPK_Dashboard_API" %PYTHON_PATH% "%~dp0backend\server.py"
+:: 2. Liberar puerto 8000
+echo [+] Limpiando puerto 8000...
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":8000" ^| find "LISTENING"') do (
+    echo [!] Matando proceso PID %%a
+    taskkill /f /pid %%a >nul 2>&1
+)
 
-echo.
-echo Dashboard desplegado correctamente.
-echo Abriendo aplicacion en el navegador...
-echo.
+:: 3. Ejecutar procesamiento de datos (Opcional)
+if exist "%ROOT_DIR%backend\analisis_mensual_tiempos.py" (
+    echo [+] Procesando datos de tiempos...
+    "%PYTHON_EXE%" "%ROOT_DIR%backend\analisis_mensual_tiempos.py"
+) else (
+    echo [!] Aviso: No se encontro script de procesamiento en backend\
+)
 
-:: Abrir navegador
+:: 4. Iniciar Servidor
+echo [+] Iniciando servidor FastAPI...
+echo [INFO] La ventana se minimizara, pero el servidor seguira corriendo.
+start /min "RPK_API" "%PYTHON_EXE%" "%ROOT_DIR%backend\server.py"
+
+:: 5. Abrir navegador
+echo [+] Abriendo Dashboard en 3 segundos...
 timeout /t 3 >nul
 start "" "http://localhost:8000"
 
 echo.
-echo Presiona cualquier tecla para cerrar este lanzador.
-pause >nul
+echo ============================================================
+echo   TODO LISTO. SI EL NAVEGADOR NO CARGA, REVISA ESTA VENTANA.
+echo ============================================================
+pause

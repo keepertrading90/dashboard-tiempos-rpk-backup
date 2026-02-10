@@ -158,9 +158,17 @@ def get_summary(
             "cargas": df_c['Carga_Dia'].tolist()
         }
     
-    # Rankings (última fecha)
+    # Rankings (última fecha) - Filtrar solo por Centro para el mini-ranking
     ultima_fecha = df_rankings['Fecha'].max()
-    rankings_ultima = df_rankings[df_rankings['Fecha'] == ultima_fecha].to_dict(orient='records')
+    rankings_ultima = df_rankings[
+        (df_rankings['Fecha'] == ultima_fecha) & 
+        (df_rankings['Tipo'] == 'Centro')
+    ].copy()
+    
+    # Asegurar que el ID del Centro es entero para evitar el .0
+    rankings_ultima['Centro'] = rankings_ultima['Centro'].fillna(0).astype(int).astype(str)
+    
+    rankings_dict = rankings_ultima.to_dict(orient='records')
 
     return {
         "kpis": {
@@ -173,7 +181,7 @@ def get_summary(
             "cargas": evolucion.values.tolist()
         },
         "evolucion_centros": evolucion_centros,
-        "rankings": rankings_ultima,
+        "rankings": rankings_dict,
         "ultima_fecha": ultima_fecha
     }
 
@@ -259,13 +267,13 @@ def get_centro_breakdown(centro_id: str, mes: str):
     }
 
 # SPA: Servir frontend
-# El orden importa: montamos la UI en / y apuntamos a index.html
-app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
-app.mount("/ui", StaticFiles(directory=str(STATIC_DIR / "ui")), name="ui")
+# Montamos toda la carpeta frontend bajo /static para simplificar rutas
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/")
 def read_index():
     from fastapi.responses import FileResponse
+    # index.html está en frontend/ui/index.html
     return FileResponse(STATIC_DIR / "ui" / "index.html")
 
 if __name__ == "__main__":
