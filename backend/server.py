@@ -158,23 +158,31 @@ def get_summary(
             "cargas": df_c['Carga_Dia'].tolist()
         }
     
-    # Rankings (última fecha) - Filtrar solo por Centro para el mini-ranking
-    ultima_fecha = df_rankings['Fecha'].max()
-    rankings_ultima = df_rankings[
-        (df_rankings['Fecha'] == ultima_fecha) & 
-        (df_rankings['Tipo'] == 'Centro')
-    ].copy()
+    # Calcular Rankings y Medias dinámicas según el periodo filtrado
+    num_dias = df_centros['Fecha'].nunique()
+    if num_dias == 0: num_dias = 1
     
-    # Asegurar que el ID del Centro es entero para evitar el .0
-    rankings_ultima['Centro'] = rankings_ultima['Centro'].fillna(0).astype(int).astype(str)
+    # Agrupación por centro sobre los datos ya filtrados
+    ranking_data = df_centros.groupby('Centro').agg(
+        total_carga=('Carga_Dia', 'sum'),
+        media_diaria=('Carga_Dia', lambda x: x.sum() / num_dias)
+    ).reset_index()
     
-    rankings_dict = rankings_ultima.to_dict(orient='records')
+    # Ordenar por carga y preparar para el frontend
+    ranking_data = ranking_data.sort_values('total_carga', ascending=False)
+    ranking_data['Centro'] = ranking_data['Centro'].astype(int).astype(str)
+    
+    rankings_dict = ranking_data.rename(columns={
+        'total_carga': 'Carga_Total',
+        'media_diaria': 'Media_Diaria'
+    }).to_dict(orient='records')
 
     return {
         "kpis": {
             "total_carga": round(total_carga, 2),
             "media_carga": round(media_carga, 2),
-            "num_centros": num_centros
+            "num_centros": num_centros,
+            "num_dias": num_dias
         },
         "evolucion_total": {
             "fechas": evolucion.index.tolist(),
@@ -182,7 +190,7 @@ def get_summary(
         },
         "evolucion_centros": evolucion_centros,
         "rankings": rankings_dict,
-        "ultima_fecha": ultima_fecha
+        "ultima_fecha": df_centros['Fecha'].max()
     }
 
 @app.get("/api/centro/{centro_id}")

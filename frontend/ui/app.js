@@ -278,27 +278,20 @@ function renderMiniRanking(rankings) {
     if (!tbody) return;
 
     if (!rankings || rankings.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay datos de ranking disponibles.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay datos disponibles.</td></tr>';
         return;
     }
 
     tbody.innerHTML = rankings.slice(0, 10).map(r => {
-        // Saturation estimate (assuming 24h capacity for simple display)
-        const saturation = (r.Carga_Dia / 24) * 100;
-        const pillClass = saturation > 90 ? 'pill-high' : (saturation > 60 ? 'pill-mid' : 'pill-low');
         const centroId = r.Centro || 'N/A';
+        const media = r.Media_Diaria || 0;
 
         return `
             <tr style="cursor: pointer" onclick="showDrilldown('${centroId}')">
                 <td><span class="center-tag">${centroId}</span></td>
-                <td class="font-bold">${r.Carga_Dia.toFixed(1)}h</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap: 8px;">
-                        <div class="progress-bar-container" style="margin-top:0; flex:1">
-                            <div class="progress-fill" style="width: ${Math.min(100, saturation)}%"></div>
-                        </div>
-                        <span class="saturation-pill ${pillClass}">${Math.round(saturation)}%</span>
-                    </div>
+                <td class="font-bold">${r.Carga_Total.toFixed(1)}h</td>
+                <td class="text-right">
+                    <span class="rpk-red-text font-bold">${media.toFixed(1)}h/día</span>
                 </td>
             </tr>
         `;
@@ -326,24 +319,16 @@ async function renderRanking() {
     }
 
     tbody.innerHTML = data.rankings.map(r => {
-        const saturation = (r.Carga_Dia / 24) * 100;
-        const pillClass = saturation > 90 ? 'pill-high' : (saturation > 60 ? 'pill-mid' : 'pill-low');
         const centroId = r.Centro || 'N/A';
+        const media = r.Media_Diaria || 0;
 
         return `
             <tr style="cursor: pointer" onclick="showDrilldown('${centroId}')">
                 <td><span class="center-tag">${centroId}</span></td>
-                <td class="font-bold">${r.Carga_Dia.toFixed(1)}h</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap: 8px;">
-                        <div class="progress-bar-container" style="margin-top:0; flex:1">
-                            <div class="progress-fill" style="width: ${Math.min(100, saturation)}%"></div>
-                        </div>
-                        <span class="saturation-pill ${pillClass}">${Math.round(saturation)}%</span>
-                    </div>
-                </td>
-                <td class="text-muted">${r.Media_Mensual ? r.Media_Mensual.toFixed(2) + 'h' : '-'}</td>
-                <td class="text-muted">${r.Total_Mes ? r.Total_Mes.toFixed(1) + 'h' : '-'}</td>
+                <td class="font-bold">${r.Carga_Total.toFixed(1)}h</td>
+                <td class="font-bold rpk-red-text">${media.toFixed(2)}h</td>
+                <td class="text-muted">${data.kpis.num_dias} días</td>
+                <td class="text-muted">-</td>
             </tr>
         `;
     }).join('');
