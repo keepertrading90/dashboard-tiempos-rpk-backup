@@ -261,7 +261,7 @@ def get_centro_breakdown(centro_id: str, mes: str):
     if 'OF' in df_f.columns: agg_cols.append('OF')
     
     df_res = df_f.groupby(agg_cols).agg(
-        horas=('Horas', 'sum'),
+        horas=('Horas', 'mean'),
         dias=('Fecha', 'nunique')
     ).reset_index().sort_values('horas', ascending=False)
     
